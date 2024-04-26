@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Patients from './Patients';
 import Doctors from './Doctors';
-// import Appointments from './Appointments';
+import DoctorPatients from './DoctorPatients';
 import { CssBaseline, Container, Grid, Typography } from '@mui/material';
 
 function App() {
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+  const handleDoctorSelect = (doctor) => {
+    setSelectedDoctor(doctor);
+  };
+
   return (
     <>
       <CssBaseline />
@@ -15,7 +21,14 @@ function App() {
             <Patients />
           </Grid>
           <Grid item xs={12} md={4}>
-            <Doctors />
+            <Doctors onSelectDoctor={handleDoctorSelect} />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            {selectedDoctor && (
+              <>
+                <DoctorPatients doctorId={selectedDoctor._id} doctorName={selectedDoctor.name} />
+              </>
+            )}
           </Grid>
         </Grid>
       </Container>
