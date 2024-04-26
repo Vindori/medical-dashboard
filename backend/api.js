@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const { driver, auth } = require('neo4j-driver');
 
 const mongoUrl = 'mongodb://localhost:27017';
@@ -29,16 +29,17 @@ app.get('/patients', async (req, res) => {
 });
 
 app.get('/doctors', async (req, res) => {
-    const session = neo4jDriver.session();
     try {
-        const result = await session.run('MATCH (d:Doctor) RETURN d');
-        const doctors = result.records.map(record => record.get('d').properties);
+        await mongoClient.connect();
+        const database = mongoClient.db('medicalDatabase');
+        const doctors = database.collection('doctors');
+        const result = await doctors.find({}).toArray();
         res.set('Access-Control-Allow-Origin', '*')
-        res.status(200).json(doctors);
+        res.status(200).json(result);
     } catch (e) {
         res.status(500).json({ error: e.message });
     } finally {
-        session.close();
+        await mongoClient.close();
     }
 });
 
@@ -53,6 +54,34 @@ app.get('/appointments', async (req, res) => {
         res.status(500).json({ error: e.message });
     } finally {
         session.close();
+    }
+});
+
+app.get('/patients/:doctorId', async (req, res) => {
+    const doctorId = req.params.doctorId;
+    const session = neo4jDriver.session();
+    try {
+        // First, get patient IDs from Neo4j based on doctor ID
+        const relationResult = await session.run(
+            'MATCH (d:Doctor {id: $doctorId})-[:TREATED_BY]-(p:Patient) RETURN p.id AS patientId',
+            { doctorId }
+        );
+        const patientIds = relationResult.records.map(record => record.get('patientId'));
+
+        // Then, fetch these patients from MongoDB
+        await mongoClient.connect();
+        const database = mongoClient.db('medicalDatabase');
+        const patients = database.collection('patients');
+        const query = { _id: { $in: patientIds.map(id => new ObjectId(id)) } };
+        const result = await patients.find(query).toArray();
+
+        res.set('Access-Control-Allow-Origin', '*');
+        res.status(200).json(result);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    } finally {
+        await session.close();
+        await mongoClient.close();
     }
 });
 
