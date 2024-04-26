@@ -6,7 +6,7 @@ const mongoUrl = 'mongodb://localhost:27017';
 const mongoClient = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
 const neo4jUrl = 'bolt://localhost:7687';
-const neo4jDriver = driver(neo4jUrl, auth.basic('username', 'password'));
+const neo4jDriver = driver(neo4jUrl, auth.basic('neo4j', 'jupiter-house-stone-isotope-nectar-2717'));
 
 const app = express();
 const port = 3000;
@@ -19,6 +19,7 @@ app.get('/patients', async (req, res) => {
         const database = mongoClient.db('medicalDatabase');
         const patients = database.collection('patients');
         const result = await patients.find({}).toArray();
+        res.set('Access-Control-Allow-Origin', '*')
         res.status(200).json(result);
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -32,6 +33,7 @@ app.get('/doctors', async (req, res) => {
     try {
         const result = await session.run('MATCH (d:Doctor) RETURN d');
         const doctors = result.records.map(record => record.get('d').properties);
+        res.set('Access-Control-Allow-Origin', '*')
         res.status(200).json(doctors);
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -45,6 +47,7 @@ app.get('/appointments', async (req, res) => {
     try {
         const result = await session.run('MATCH (a:Appointment) RETURN a');
         const appointments = result.records.map(record => record.get('a').properties);
+        res.set('Access-Control-Allow-Origin', '*')
         res.status(200).json(appointments);
     } catch (e) {
         res.status(500).json({ error: e.message });

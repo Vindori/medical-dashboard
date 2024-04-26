@@ -5,7 +5,10 @@ function Patients() {
   const [patients, setPatients] = useState([]);
 
   useEffect(() => {
-    setPatients([{"age":12, name:"Lol Kekov", "_id": 1}, {"age":1, name:"Roflan Blinov", "_id": 1}]);
+    fetch('http://localhost:3000/patients')
+      .then(response => response.json())
+      .then(data => setPatients(data))
+      .catch(error => console.error('Error fetching patients:', error));
   }, []);
 
   return (

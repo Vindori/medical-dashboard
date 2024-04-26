@@ -1,5 +1,7 @@
 import React from 'react';
 import Patients from './Patients';
+import Doctors from './Doctors';
+// import Appointments from './Appointments';
 import { CssBaseline, Container, Grid, Typography } from '@mui/material';
 
 function App() {
@@ -11,6 +13,9 @@ function App() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Patients />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Doctors />
           </Grid>
         </Grid>
       </Container>
