@@ -5,11 +5,15 @@ function Patients() {
   const [patients, setPatients] = useState([]);
 
   useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const fetchPatients = () => {
     fetch('http://localhost:3000/patients')
       .then(response => response.json())
       .then(data => setPatients(data))
       .catch(error => console.error('Error fetching patients:', error));
-  }, []);
+  };
 
   return (
     <Paper style={{ margin: '16px', padding: '16px' }}>
